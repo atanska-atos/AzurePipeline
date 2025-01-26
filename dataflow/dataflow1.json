@@ -6,13 +6,6 @@
 			"sources": [
 				{
 					"dataset": {
-						"referenceName": "Factories",
-						"type": "DatasetReference"
-					},
-					"name": "factorysource"
-				},
-				{
-					"dataset": {
 						"referenceName": "Sales",
 						"type": "DatasetReference"
 					},
@@ -34,13 +27,6 @@
 				}
 			],
 			"sinks": [
-				{
-					"dataset": {
-						"referenceName": "DelimitedText1",
-						"type": "DatasetReference"
-					},
-					"name": "operationsFactory"
-				},
 				{
 					"dataset": {
 						"referenceName": "DelimitedText2",
@@ -79,9 +65,6 @@
 			],
 			"transformations": [
 				{
-					"name": "addColumn"
-				},
-				{
 					"name": "transformDates"
 				},
 				{
@@ -110,14 +93,6 @@
 				}
 			],
 			"scriptLines": [
-				"source(output(",
-				"          Factory as string,",
-				"          Latitude as string,",
-				"          Longitude as string",
-				"     ),",
-				"     allowSchemaDrift: true,",
-				"     validateSchema: false,",
-				"     ignoreNoFilesFound: false) ~> factorysource",
 				"source(output(",
 				"          {Row ID} as string,",
 				"          {Order ID} as string,",
@@ -159,7 +134,6 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false) ~> TargetsSource",
-				"factorysource derive(column1 = ERROR_FUNCTION('')) ~> addColumn",
 				"SalesSource derive(OrderDate = toDate({Order Date},'yyyy-MM-dd')) ~> transformDates",
 				"transformDates derive(GrossMargin = ((toDecimal(Sales))-(toDecimal(Cost)))/toDecimal(Sales)*100) ~> countGrossMargin",
 				"countGrossMargin derive(UnitCost = toDecimal(Cost)/toDecimal(Units)) ~> unitCost",
@@ -168,13 +142,10 @@
 				"ProductsSource derive(GrossProfit = toDecimal({Unit Price})-toDecimal({Unit Cost})) ~> grossProfit",
 				"grossProfit aggregate(groupBy(Factory),",
 				"     SumGrossProfitForFactory = sum(GrossProfit)) ~> sumGrossProfitForFactory",
-				"grossProfit aggregate(groupBy({Product ID})) ~> removeDuplicates",
+				"grossProfit aggregate(groupBy({Product ID}),",
+				"     column1 = ERROR_FUNCTION('')) ~> removeDuplicates",
 				"grossProfit filter(Division == 'Chocolate') ~> filterDivision",
 				"TargetsSource aggregate(column1 = sum(toDecimal(Target))) ~> sumTargets",
-				"addColumn sink(allowSchemaDrift: true,",
-				"     validateSchema: false,",
-				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> operationsFactory",
 				"sumSalesByProductID sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     skipDuplicateMapInputs: true,",

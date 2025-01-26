@@ -1,0 +1,9 @@
+{
+	"name": "atanskadatafactory",
+	"location": "polandcentral",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "d5a3f525-b291-406d-a5c4-1aa008bbf626",
+		"tenantId": "79b774ec-e0fb-461e-9a58-7c73e6306832"
+	}
+}

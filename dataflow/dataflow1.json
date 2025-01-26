@@ -43,13 +43,6 @@
 				},
 				{
 					"dataset": {
-						"referenceName": "DelimitedText4",
-						"type": "DatasetReference"
-					},
-					"name": "operationsProducts2"
-				},
-				{
-					"dataset": {
 						"referenceName": "DelimitedText5",
 						"type": "DatasetReference"
 					},
@@ -81,9 +74,6 @@
 				},
 				{
 					"name": "sumGrossProfitForFactory"
-				},
-				{
-					"name": "removeDuplicates"
 				},
 				{
 					"name": "filterDivision"
@@ -142,8 +132,6 @@
 				"ProductsSource derive(GrossProfit = toDecimal({Unit Price})-toDecimal({Unit Cost})) ~> grossProfit",
 				"grossProfit aggregate(groupBy(Factory),",
 				"     SumGrossProfitForFactory = sum(GrossProfit)) ~> sumGrossProfitForFactory",
-				"grossProfit aggregate(groupBy({Product ID}),",
-				"     column1 = ERROR_FUNCTION('')) ~> removeDuplicates",
 				"grossProfit filter(Division == 'Chocolate') ~> filterDivision",
 				"TargetsSource aggregate(column1 = sum(toDecimal(Target))) ~> sumTargets",
 				"sumSalesByProductID sink(allowSchemaDrift: true,",
@@ -154,10 +142,6 @@
 				"     validateSchema: false,",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> operationsProducts",
-				"removeDuplicates sink(allowSchemaDrift: true,",
-				"     validateSchema: false,",
-				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> operationsProducts2",
 				"sumGrossProfitForFactory sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     skipDuplicateMapInputs: true,",

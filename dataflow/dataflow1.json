@@ -1,0 +1,201 @@
+{
+	"name": "dataflow1",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Factories",
+						"type": "DatasetReference"
+					},
+					"name": "factorysource"
+				},
+				{
+					"dataset": {
+						"referenceName": "Sales",
+						"type": "DatasetReference"
+					},
+					"name": "SalesSource"
+				},
+				{
+					"dataset": {
+						"referenceName": "ProductsSource",
+						"type": "DatasetReference"
+					},
+					"name": "ProductsSource"
+				},
+				{
+					"dataset": {
+						"referenceName": "Targets",
+						"type": "DatasetReference"
+					},
+					"name": "TargetsSource"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "DelimitedText1",
+						"type": "DatasetReference"
+					},
+					"name": "operationsFactory"
+				},
+				{
+					"dataset": {
+						"referenceName": "DelimitedText2",
+						"type": "DatasetReference"
+					},
+					"name": "operationsSales"
+				},
+				{
+					"dataset": {
+						"referenceName": "DelimitedText3",
+						"type": "DatasetReference"
+					},
+					"name": "operationsProducts"
+				},
+				{
+					"dataset": {
+						"referenceName": "DelimitedText4",
+						"type": "DatasetReference"
+					},
+					"name": "operationsProducts2"
+				},
+				{
+					"dataset": {
+						"referenceName": "DelimitedText5",
+						"type": "DatasetReference"
+					},
+					"name": "operationsProducts3"
+				},
+				{
+					"dataset": {
+						"referenceName": "DelimitedText6",
+						"type": "DatasetReference"
+					},
+					"name": "operationsTargets"
+				}
+			],
+			"transformations": [
+				{
+					"name": "addColumn"
+				},
+				{
+					"name": "transformDates"
+				},
+				{
+					"name": "countGrossMargin"
+				},
+				{
+					"name": "unitCost"
+				},
+				{
+					"name": "sumSalesByProductID"
+				},
+				{
+					"name": "grossProfit"
+				},
+				{
+					"name": "sumGrossProfitForFactory"
+				},
+				{
+					"name": "removeDuplicates"
+				},
+				{
+					"name": "filterDivision"
+				},
+				{
+					"name": "sumTargets"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          Factory as string,",
+				"          Latitude as string,",
+				"          Longitude as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> factorysource",
+				"source(output(",
+				"          {Row ID} as string,",
+				"          {Order ID} as string,",
+				"          {Order Date} as string,",
+				"          {Ship Date} as string,",
+				"          {Ship Mode} as string,",
+				"          {Customer ID} as string,",
+				"          {Country/Region} as string,",
+				"          City as string,",
+				"          {State/Province} as string,",
+				"          {Postal Code} as string,",
+				"          Division as string,",
+				"          Region as string,",
+				"          {Product ID} as string,",
+				"          {Product Name} as string,",
+				"          Sales as string,",
+				"          Units as string,",
+				"          {Gross Profit} as string,",
+				"          Cost as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> SalesSource",
+				"source(output(",
+				"          Division as string,",
+				"          {Product Name} as string,",
+				"          Factory as string,",
+				"          {Product ID} as string,",
+				"          {Unit Price} as string,",
+				"          {Unit Cost} as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> ProductsSource",
+				"source(output(",
+				"          Division as string,",
+				"          Target as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> TargetsSource",
+				"factorysource derive(column1 = ERROR_FUNCTION('')) ~> addColumn",
+				"SalesSource derive(OrderDate = toDate({Order Date},'yyyy-MM-dd')) ~> transformDates",
+				"transformDates derive(GrossMargin = ((toDecimal(Sales))-(toDecimal(Cost)))/toDecimal(Sales)*100) ~> countGrossMargin",
+				"countGrossMargin derive(UnitCost = toDecimal(Cost)/toDecimal(Units)) ~> unitCost",
+				"unitCost aggregate(groupBy({Product ID}),",
+				"     column1 = sum(toDecimal(Sales))) ~> sumSalesByProductID",
+				"ProductsSource derive(GrossProfit = toDecimal({Unit Price})-toDecimal({Unit Cost})) ~> grossProfit",
+				"grossProfit aggregate(groupBy(Factory),",
+				"     SumGrossProfitForFactory = sum(GrossProfit)) ~> sumGrossProfitForFactory",
+				"grossProfit aggregate(groupBy({Product ID})) ~> removeDuplicates",
+				"grossProfit filter(Division == 'Chocolate') ~> filterDivision",
+				"TargetsSource aggregate(column1 = sum(toDecimal(Target))) ~> sumTargets",
+				"addColumn sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> operationsFactory",
+				"sumSalesByProductID sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> operationsSales",
+				"filterDivision sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> operationsProducts",
+				"removeDuplicates sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> operationsProducts2",
+				"sumGrossProfitForFactory sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> operationsProducts3",
+				"sumTargets sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> operationsTargets"
+			]
+		}
+	}
+}

@@ -1,0 +1,32 @@
+{
+	"name": "Targets",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureBlobStorage1",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "Candy_Targets.csv",
+				"container": "atanskacontainerblob"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "Division",
+				"type": "String"
+			},
+			{
+				"name": "Target",
+				"type": "String"
+			}
+		]
+	}
+}
